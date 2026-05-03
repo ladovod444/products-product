@@ -90,6 +90,7 @@ final class ProductIdsByBarcodesRepository implements ProductIdsByBarcodesInterf
             ->where('info.barcode IN (:barcodes)');
 
         $dbalInfo
+            ->addSelect('invariable.id AS invariable')
             ->join(
                 'product',
                 ProductInvariable::class, 'invariable',
@@ -99,8 +100,7 @@ final class ProductIdsByBarcodesRepository implements ProductIdsByBarcodesInterf
                     invariable.variation IS NULL AND
                     invariable.modification IS NULL
                 ',
-            )
-            ->addSelect('invariable.id AS invariable');
+            );
 
         /** Поиск артикула OFFER */
 

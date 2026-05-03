@@ -57,7 +57,7 @@ final class UpdateVariationQuantityTest extends KernelTestCase
         /** @var ProductDetailByInvariableResult $result */
         $result = $productDetailByInvariable->invariable(ProductInvariableUid::TEST)->find();
 
-        $variation = $result->getProductVariationId();
+        $variation = $result->getProductVariationUid();
 
         /** @var UpdateVariationQuantityHandler $handler */
         $handler = self::getContainer()->get(UpdateVariationQuantityHandler::class);

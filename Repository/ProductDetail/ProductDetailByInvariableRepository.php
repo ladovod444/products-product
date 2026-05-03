@@ -27,20 +27,41 @@ namespace BaksDev\Products\Product\Repository\ProductDetail;
 
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Products\Category\Entity\CategoryProduct;
+use BaksDev\Products\Category\Entity\Info\CategoryProductInfo;
 use BaksDev\Products\Category\Entity\Offers\CategoryProductOffers;
+use BaksDev\Products\Category\Entity\Offers\Trans\CategoryProductOffersTrans;
 use BaksDev\Products\Category\Entity\Offers\Variation\CategoryProductVariation;
 use BaksDev\Products\Category\Entity\Offers\Variation\Modification\CategoryProductModification;
+use BaksDev\Products\Category\Entity\Offers\Variation\Modification\Trans\CategoryProductModificationTrans;
+use BaksDev\Products\Category\Entity\Offers\Variation\Trans\CategoryProductVariationTrans;
+use BaksDev\Products\Category\Entity\Section\CategoryProductSection;
+use BaksDev\Products\Category\Entity\Section\Field\CategoryProductSectionField;
+use BaksDev\Products\Category\Entity\Section\Field\Trans\CategoryProductSectionFieldTrans;
+use BaksDev\Products\Category\Entity\Trans\CategoryProductTrans;
+use BaksDev\Products\Product\Entity\Active\ProductActive;
+use BaksDev\Products\Product\Entity\Category\ProductCategory;
+use BaksDev\Products\Product\Entity\Description\ProductDescription;
 use BaksDev\Products\Product\Entity\Info\ProductInfo;
+use BaksDev\Products\Product\Entity\Offers\Barcode\ProductOfferBarcode;
 use BaksDev\Products\Product\Entity\Offers\Image\ProductOfferImage;
+use BaksDev\Products\Product\Entity\Offers\Price\ProductOfferPrice;
 use BaksDev\Products\Product\Entity\Offers\ProductOffer;
+use BaksDev\Products\Product\Entity\Offers\Quantity\ProductOfferQuantity;
+use BaksDev\Products\Product\Entity\Offers\Variation\Barcode\ProductVariationBarcode;
 use BaksDev\Products\Product\Entity\Offers\Variation\Image\ProductVariationImage;
+use BaksDev\Products\Product\Entity\Offers\Variation\Modification\Barcode\ProductModificationBarcode;
 use BaksDev\Products\Product\Entity\Offers\Variation\Modification\Image\ProductModificationImage;
+use BaksDev\Products\Product\Entity\Offers\Variation\Modification\Price\ProductModificationPrice;
 use BaksDev\Products\Product\Entity\Offers\Variation\Modification\ProductModification;
+use BaksDev\Products\Product\Entity\Offers\Variation\Modification\Quantity\ProductModificationQuantity;
+use BaksDev\Products\Product\Entity\Offers\Variation\Price\ProductVariationPrice;
 use BaksDev\Products\Product\Entity\Offers\Variation\ProductVariation;
+use BaksDev\Products\Product\Entity\Offers\Variation\Quantity\ProductVariationQuantity;
 use BaksDev\Products\Product\Entity\Photo\ProductPhoto;
 use BaksDev\Products\Product\Entity\Price\ProductPrice;
 use BaksDev\Products\Product\Entity\Product;
 use BaksDev\Products\Product\Entity\ProductInvariable;
+use BaksDev\Products\Product\Entity\Property\ProductProperty;
 use BaksDev\Products\Product\Entity\Trans\ProductTrans;
 use BaksDev\Products\Product\Type\Invariable\ProductInvariableUid;
 use Doctrine\DBAL\Exception\InvalidArgumentException;
@@ -97,15 +118,42 @@ final class ProductDetailByInvariableRepository implements ProductDetailByInvari
                 type: ProductInvariableUid::TYPE,
             );
 
-
         $dbal
-            ->select('product.event as product_event')
+            ->select('product.id as product_id')
+            ->addSelect('product.event as product_event')
             ->join(
                 'invariable',
                 Product::class,
                 'product',
                 'product.id = invariable.product',
             );
+
+
+        $dbal
+            ->addSelect('product_active.active')
+            ->addSelect('product_active.active_from')
+            ->addSelect('product_active.active_to')
+            ->join(
+                'product',
+                ProductActive::class,
+                'product_active',
+                'product_active.event = product.event',
+            );
+
+
+        $dbal
+            ->addSelect('product_desc.preview AS product_preview')
+            ->addSelect('product_desc.description AS product_description')
+            ->leftJoin(
+                'product',
+                ProductDescription::class,
+                'product_desc',
+                '
+                    product_desc.event = product.event 
+                    AND product_desc.device = :device
+                 ',
+            )
+            ->setParameter('device', 'pc');
 
         $dbal
             ->leftJoin(
@@ -114,6 +162,7 @@ final class ProductDetailByInvariableRepository implements ProductDetailByInvari
                 'product_trans',
                 'product_trans.event = product.event AND product_trans.local = :local',
             );
+
 
         /* Базовая Цена товара */
         $dbal->leftJoin(
@@ -124,12 +173,14 @@ final class ProductDetailByInvariableRepository implements ProductDetailByInvari
         );
 
         /* Базовый артикул продукта и стоимость */
-        $dbal->join(
-            'product',
-            ProductInfo::class,
-            'product_info',
-            'product_info.product = product.id ',
-        );
+        $dbal
+            ->addSelect('product_info.url AS product_url')
+            ->join(
+                'product',
+                ProductInfo::class,
+                'product_info',
+                'product_info.product = product.id ',
+            );
 
         /**
          * Торговое предложение
@@ -137,6 +188,7 @@ final class ProductDetailByInvariableRepository implements ProductDetailByInvari
 
         $dbal
             ->addSelect('product_offer.id as product_offer_id')
+            ->addSelect('product_offer.const as product_offer_const')
             ->addSelect('product_offer.value as product_offer_value')
             ->addSelect('product_offer.postfix as product_offer_postfix')
             ->leftJoin(
@@ -159,12 +211,24 @@ final class ProductDetailByInvariableRepository implements ProductDetailByInvari
                 'category_offer.id = product_offer.category_offer',
             );
 
+        /* Получаем название торгового предложения */
+        $dbal
+            ->addSelect('category_offer_trans.name as product_offer_name')
+            ->addSelect('category_offer_trans.postfix as product_offer_name_postfix')
+            ->leftJoin(
+                'category_offer',
+                CategoryProductOffersTrans::class,
+                'category_offer_trans',
+                'category_offer_trans.offer = category_offer.id AND category_offer_trans.local = :local',
+            );
+
         /**
          * Множественные варианты торгового предложения
          */
 
         $dbal
             ->addSelect('product_variation.id as product_variation_id')
+            ->addSelect('product_variation.const as product_variation_const')
             ->addSelect('product_variation.value as product_variation_value')
             ->addSelect('product_variation.postfix as product_variation_postfix')
             ->leftJoin(
@@ -187,12 +251,26 @@ final class ProductDetailByInvariableRepository implements ProductDetailByInvari
                 'category_offer_variation.id = product_variation.category_variation',
             );
 
+
+        /* Получаем название множественного варианта */
+        $dbal
+            ->addSelect('category_offer_variation_trans.name as product_variation_name')
+            ->addSelect('category_offer_variation_trans.postfix as product_variation_name_postfix')
+            ->leftJoin(
+                'category_offer_variation',
+                CategoryProductVariationTrans::class,
+                'category_offer_variation_trans',
+                'category_offer_variation_trans.variation = category_offer_variation.id AND category_offer_variation_trans.local = :local',
+            );
+
+
         /**
          * Модификация множественного варианта торгового предложения
          */
 
         $dbal
             ->addSelect('product_modification.id as product_modification_id')
+            ->addSelect('product_modification.const as product_modification_const')
             ->addSelect('product_modification.value as product_modification_value')
             ->addSelect('product_modification.postfix as product_modification_postfix')
             ->leftJoin(
@@ -215,6 +293,21 @@ final class ProductDetailByInvariableRepository implements ProductDetailByInvari
                 'category_offer_modification.id = product_modification.category_modification',
             );
 
+
+        /* Получаем название типа модификации */
+        $dbal
+            ->addSelect('category_offer_modification_trans.name as product_modification_name')
+            ->addSelect('category_offer_modification_trans.postfix as product_modification_name_postfix')
+            ->leftJoin(
+                'category_offer_modification',
+                CategoryProductModificationTrans::class,
+                'category_offer_modification_trans',
+                '
+            category_offer_modification_trans.modification = category_offer_modification.id AND 
+            category_offer_modification_trans.local = :local',
+            );
+
+
         /* Артикул продукта */
         $dbal->addSelect('
 			COALESCE(
@@ -224,6 +317,49 @@ final class ProductDetailByInvariableRepository implements ProductDetailByInvari
                 product_info.article
             ) AS product_article
 		');
+
+
+        /**
+         * Категория
+         */
+
+        $dbal->join(
+            'product',
+            ProductCategory::class,
+            'product_event_category',
+            '
+                product_event_category.event = product.event 
+                AND product_event_category.root = true
+            ');
+
+
+        $dbal->join(
+            'product_event_category',
+            CategoryProduct::class,
+            'category',
+            'category.id = product_event_category.category',
+        );
+
+        $dbal
+            ->addSelect('category_trans.name AS category_name')
+            ->leftJoin(
+                'category',
+                CategoryProductTrans::class,
+                'category_trans',
+                '
+                    category_trans.event = category.event 
+                    AND category_trans.local = :local
+                ');
+
+        $dbal
+            ->addSelect('category_info.url AS category_url')
+            ->leftJoin(
+                'category',
+                CategoryProductInfo::class,
+                'category_info',
+                'category_info.event = category.event',
+            );
+
 
         /**
          *  Фото продукта
@@ -301,8 +437,6 @@ final class ProductDetailByInvariableRepository implements ProductDetailByInvari
         ');
 
 
-        $dbal->addSelect('NULL AS category_section_field');
-
         /* Название продукта */
         $dbal->addSelect('
             COALESCE(
@@ -311,6 +445,259 @@ final class ProductDetailByInvariableRepository implements ProductDetailByInvari
             ) AS product_name
 		');
 
+        /**
+         * Цена
+         */
+
+
+        /* Цена торгового предложения */
+        $dbal->leftJoin(
+            'product_offer',
+            ProductOfferPrice::class,
+            'product_offer_price',
+            'product_offer_price.offer = product_offer.id',
+        );
+
+        /* Цена множественного варианта */
+        $dbal->leftJoin(
+            'product_variation',
+            ProductVariationPrice::class,
+            'product_variation_price',
+            'product_variation_price.variation = product_variation.id',
+        );
+
+        /* Цена модификации множественного варианта */
+        $dbal->leftJoin(
+            'product_modification',
+            ProductModificationPrice::class,
+            'product_modification_price',
+            'product_modification_price.modification = product_modification.id',
+        );
+
+
+        /* Стоимость продукта */
+        $dbal->addSelect('
+			COALESCE(
+                NULLIF(product_modification_price.price, 0), 
+                NULLIF(product_variation_price.price, 0), 
+                NULLIF(product_offer_price.price, 0), 
+                NULLIF(product_price.price, 0),
+                0
+            ) AS product_price
+		');
+
+        /* Предыдущая стоимость продукта */
+        $dbal->addSelect("
+			COALESCE(
+                NULLIF(product_modification_price.old, 0),
+                NULLIF(product_variation_price.old, 0),
+                NULLIF(product_offer_price.old, 0),
+                NULLIF(product_price.old, 0),
+                0
+            ) AS product_old_price
+		");
+
+        /* Валюта продукта */
+
+        $dbal->addSelect(
+            '
+			CASE
+			   WHEN product_modification_price.price IS NOT NULL AND product_modification_price.price > 0 
+			   THEN product_modification_price.currency
+			   
+			   WHEN product_variation_price.price IS NOT NULL AND product_variation_price.price > 0 
+			   THEN product_variation_price.currency
+			   
+			   WHEN product_offer_price.price IS NOT NULL AND product_offer_price.price > 0 
+			   THEN product_offer_price.currency
+			   
+			   WHEN product_price.price IS NOT NULL AND product_price.price > 0 
+			   THEN product_price.currency
+			   
+			   ELSE NULL
+			END AS product_currency
+		');
+
+
+        /**
+         * Наличие и резерв
+         */
+
+        /* Наличие и резерв торгового предложения */
+        $dbal->leftJoin(
+            'product_offer',
+            ProductOfferQuantity::class,
+            'product_offer_quantity',
+            'product_offer_quantity.offer = product_offer.id',
+        );
+
+        /* Наличие и резерв множественного варианта */
+        $dbal->leftJoin(
+            'product_variation',
+            ProductVariationQuantity::class,
+            'product_variation_quantity',
+            'product_variation_quantity.variation = product_variation.id',
+        );
+
+        /* Наличие и резерв модификации множественного варианта */
+        $dbal->leftJoin(
+            'product_modification',
+            ProductModificationQuantity::class,
+            'product_modification_quantity',
+            'product_modification_quantity.modification = product_modification.id',
+        );
+
+        $dbal->addSelect(
+            '
+			CASE
+			
+			   WHEN product_modification_quantity.quantity > 0
+			   THEN product_modification_quantity.quantity
+
+			   WHEN product_variation_quantity.quantity > 0
+			   THEN product_variation_quantity.quantity 
+			
+			   WHEN product_offer_quantity.quantity > 0
+			   THEN product_offer_quantity.quantity
+
+			   WHEN product_price.quantity > 0
+			   THEN product_price.quantity
+	
+			   ELSE 0
+			   
+			END AS product_quantity
+		',
+        );
+
+        $dbal->addSelect("
+			COALESCE(
+                NULLIF(product_modification_quantity.reserve, 0),
+                NULLIF(product_variation_quantity.reserve, 0),
+                NULLIF(product_offer_quantity.reserve, 0),
+                NULLIF(product_price.reserve, 0),
+                0
+            ) AS product_reserve
+		");
+
+
+        /** Штрихкоды товаров */
+        $dbal
+            ->leftJoin(
+                'product_offer',
+                ProductOfferBarcode::class,
+                'product_offer_barcode',
+                'product_offer_barcode.offer = product_offer.id',
+            );
+
+        $dbal
+            ->leftJoin(
+                'product_variation',
+                ProductVariationBarcode::class,
+                'product_variation_barcode',
+                'product_variation_barcode.variation = product_variation.id',
+            );
+
+        $dbal
+            ->leftJoin(
+                'product_modification',
+                ProductModificationBarcode::class,
+                'product_modification_barcode',
+                'product_modification_barcode.modification = product_modification.id',
+            );
+
+
+        /** @depricated */
+        $dbal->addSelect('
+            COALESCE(
+                product_modification.barcode_old, 
+                product_variation.barcode_old, 
+                product_offer.barcode_old, 
+                product_info.barcode
+            ) AS product_barcode
+		');
+
+
+        $dbal->addSelect(
+            "
+            JSON_AGG
+                (DISTINCT
+         			CASE
+         			    WHEN product_modification_barcode.value IS NOT NULL
+                        THEN product_modification_barcode.value
+                        
+                        WHEN product_variation_barcode.value IS NOT NULL
+                        THEN product_variation_barcode.value
+                        
+                        WHEN product_offer_barcode.value IS NOT NULL
+                        THEN product_offer_barcode.value
+                        
+                        WHEN product_info.barcode IS NOT NULL
+                        THEN product_info.barcode
+                        
+                        ELSE NULL
+                    END
+                )
+                    AS product_barcodes",
+        );
+
+        /* Свойства, участвующие в карточке */
+
+        $dbal->leftJoin(
+            'category',
+            CategoryProductSection::class,
+            'category_section',
+            'category_section.event = category.event',
+        );
+
+        $dbal->leftJoin(
+            'category_section',
+            CategoryProductSectionField::class,
+            'category_section_field',
+            'category_section_field.section = category_section.id 
+            AND (category_section_field.public = TRUE OR category_section_field.name = TRUE )',
+        );
+
+        $dbal->leftJoin(
+            'category_section_field',
+            CategoryProductSectionFieldTrans::class,
+            'category_section_field_trans',
+            'category_section_field_trans.field = category_section_field.id 
+            AND category_section_field_trans.local = :local',
+        );
+
+        $dbal->leftJoin(
+            'category_section_field',
+            ProductProperty::class,
+            'product_property',
+            'product_property.event = product.event 
+            AND product_property.field = category_section_field.const',
+        );
+
+        $dbal->addSelect(
+            "JSON_AGG
+		( DISTINCT
+			
+				JSONB_BUILD_OBJECT
+				(
+					'0', category_section_field.sort, /* сортировка  */
+				
+					'field_uid', category_section_field.id,
+					'field_const', category_section_field.const,
+					'field_name', category_section_field.name,
+					'field_alternative', category_section_field.alternative,
+					'field_public', category_section_field.public,
+					'field_card', category_section_field.card,
+					'field_type', category_section_field.type,
+					'field_trans', category_section_field_trans.name,
+					'field_value', product_property.value
+				)
+			
+		)
+			AS category_section_field",
+        );
+
+
+        $dbal->allGroupByExclude();
 
         return $dbal
             ->enableCache('products-product')

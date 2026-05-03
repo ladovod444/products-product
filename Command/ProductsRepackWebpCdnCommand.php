@@ -24,7 +24,7 @@
 namespace BaksDev\Products\Product\Command;
 
 use BaksDev\Core\Messenger\MessageDispatchInterface;
-use BaksDev\Files\Resources\Messenger\Request\Images\CDNUploadImage;
+use BaksDev\Files\Resources\Messenger\Request\Images\CDNUploadImageDispatcher;
 use BaksDev\Files\Resources\Messenger\Request\Images\CDNUploadImageMessage;
 use BaksDev\Products\Product\Repository\UnCompressProductsImages\UnCompressProductsImagesInterface;
 use BaksDev\Products\Product\Repository\UnCompressProductsImages\UnCompressProductsImagesResult;
@@ -46,7 +46,7 @@ class ProductsRepackWebpCdnCommand extends Command
 {
     public function __construct(
         private readonly UnCompressProductsImagesInterface $UnCompressProductsImages,
-        private readonly CDNUploadImage $CDNUploadImage,
+        private readonly CDNUploadImageDispatcher $CDNUploadImage,
         private readonly MessageDispatchInterface $MessageDispatch
     )
     {

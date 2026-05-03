@@ -1,17 +1,17 @@
 <?php
 /*
  *  Copyright 2026.  Baks.dev <admin@baks.dev>
- *  
+ *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
  *  in the Software without restriction, including without limitation the rights
  *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  *  copies of the Software, and to permit persons to whom the Software is furnished
  *  to do so, subject to the following conditions:
- *  
+ *
  *  The above copyright notice and this permission notice shall be included in all
  *  copies or substantial portions of the Software.
- *  
+ *
  *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  *  FITNESS FOR A PARTICULAR PURPOSE AND NON INFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,43 +23,39 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Product\Repository\ProductDetail\Tests;
 
-use BaksDev\Core\Type\Field\InputField;
-use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByInvariableInterface;
-use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByInvariableResult;
+use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierByInvariableInterface;
+use BaksDev\Products\Product\Repository\CurrentProductIdentifier\CurrentProductIdentifierResult;
+use BaksDev\Products\Product\Type\Invariable\ProductInvariableUid;
 use PHPUnit\Framework\Attributes\DependsOnClass;
 use PHPUnit\Framework\Attributes\Group;
-use ReflectionClass;
-use ReflectionMethod;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\Attribute\When;
 
+
 #[Group('products-product')]
 #[When(env: 'test')]
-final class ProductDetailByInvariableRepositoryTest extends KernelTestCase
+class CurrentProductIdentifierByInvariableRepositoryTest extends KernelTestCase
 {
-    //#[DependsOnClass(ProductsProductNewAdminUseCaseTest::class)]
-    //#[DependsOnClass(ProductInvariableAdminUseCaseTest::class)]
-    public function testFind(): void
+    public function testCurrentProductIdentifierByInvariableRepository(): void
     {
         self::assertTrue(true);
 
-        /** @var ProductDetailByInvariableInterface $productDetailByInvariable */
-        $productDetailByInvariable = self::getContainer()->get(ProductDetailByInvariableInterface::class);
+        /** @var CurrentProductIdentifierByInvariableInterface $CurrentProductIdentifierByInvariableRepository */
+        $CurrentProductIdentifierByInvariableRepository = self::getContainer()->get(CurrentProductIdentifierByInvariableInterface::class);
 
-        /** @var ProductDetailByInvariableResult $result */
-        $ProductDetailByInvariableResult = $productDetailByInvariable
-            ->invariable(ProductInvariableUid::TEST)
+        $CurrentProductIdentifierResult = $CurrentProductIdentifierByInvariableRepository
+            ->forProductInvariable(new ProductInvariableUid())
             ->find();
 
-        if($ProductDetailByInvariableResult instanceof ProductDetailByInvariableResult)
+        if(false === $CurrentProductIdentifierResult)
         {
             return;
         }
 
+
         // Вызываем все геттеры
-        $reflectionClass = new ReflectionClass(ProductDetailByInvariableResult::class);
+        $reflectionClass = new ReflectionClass(CurrentProductIdentifierResult::class);
         $methods = $reflectionClass->getMethods(ReflectionMethod::IS_PUBLIC);
 
         foreach($methods as $method)
@@ -68,8 +64,8 @@ final class ProductDetailByInvariableRepositoryTest extends KernelTestCase
             if($method->getNumberOfParameters() === 0)
             {
                 // Вызываем метод
-                $data = $method->invoke($ProductDetailByInvariableResult);
-                // dump($data);
+                $data = $method->invoke($CurrentProductIdentifierResult);
+                dump($data);
             }
         }
     }
