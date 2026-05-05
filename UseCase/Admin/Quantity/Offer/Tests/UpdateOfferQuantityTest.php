@@ -57,7 +57,7 @@ final class UpdateOfferQuantityTest extends KernelTestCase
         /** @var ProductDetailByInvariableResult $result */
         $result = $productDetailByInvariable->invariable(ProductInvariableUid::TEST)->find();
 
-        $offer = $result->getProductOfferId();
+        $offer = $result->getProductOfferUid();
 
         /** @var UpdateOfferQuantityHandler $handler */
         $handler = self::getContainer()->get(UpdateOfferQuantityHandler::class);

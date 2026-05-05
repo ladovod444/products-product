@@ -25,17 +25,21 @@ declare(strict_types=1);
 
 namespace BaksDev\Products\Product\Repository\ProductDetail;
 
+use BaksDev\Core\Type\Field\InputField;
 use BaksDev\Products\Product\Type\Event\ProductEventUid;
 use BaksDev\Products\Product\Type\Id\ProductUid;
+use BaksDev\Products\Product\Type\Offers\ConstId\ProductOfferConst;
 use BaksDev\Products\Product\Type\Offers\Id\ProductOfferUid;
+use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst;
 use BaksDev\Products\Product\Type\Offers\Variation\Id\ProductVariationUid;
+use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\Id\ProductModificationUid;
 use BaksDev\Reference\Currency\Type\Currency;
 use BaksDev\Reference\Money\Type\Money;
 use DateTimeImmutable;
 use Symfony\Component\Validator\Constraints as Assert;
 
-class ProductDetailByEventResult
+class ProductDetailByEventResult implements ProductDetailInterface
 {
     public function __construct(
         private ?string $id, // идентификатор события
@@ -43,19 +47,23 @@ class ProductDetailByEventResult
 
         private ?string $url,
         private ?string $product_name,
+
         private ?string $product_offer_uid,
+        private ?string $product_offer_const,
         private ?string $product_offer_value,
         private ?string $product_offer_reference,
         private ?string $product_offer_name,
         private ?string $product_offer_name_postfix,
 
         private ?string $product_variation_uid,
+        private ?string $product_variation_const,
         private ?string $product_variation_value,
         private ?string $product_variation_reference,
         private ?string $product_variation_name,
         private ?string $product_variation_name_postfix,
 
         private ?string $product_modification_uid,
+        private ?string $product_modification_const,
         private ?string $product_modification_value,
         private ?string $product_modification_reference,
         private ?string $product_modification_name,
@@ -102,14 +110,14 @@ class ProductDetailByEventResult
     ) {}
 
 
-    public function getProductId(): ProductEventUid
-    {
-        return new ProductEventUid($this->id);
-    }
-
-    public function getProductMain(): ProductUid
+    public function getProductId(): ProductUid
     {
         return new ProductUid($this->main);
+    }
+
+    public function getProductEvent(): ProductEventUid
+    {
+        return new ProductEventUid($this->id);
     }
 
 
@@ -129,6 +137,8 @@ class ProductDetailByEventResult
         return $this->product_article;
     }
 
+    /** Category */
+
     public function getCategoryName(): ?string
     {
         return $this->category_name;
@@ -139,19 +149,33 @@ class ProductDetailByEventResult
         return $this->category_url;
     }
 
-    public function getCategorySectionField(): ?string
-    {
-        return $this->category_section_field;
-    }
 
-    public function getProductOfferUid(): ProductOfferUid|null
+    public function getCategorySectionField(): array|null
     {
-        if(is_null($this->product_offer_uid))
+        if(is_null($this->category_section_field))
         {
             return null;
         }
 
-        return new ProductOfferUid($this->product_offer_uid);
+        if(false === json_validate($this->category_section_field))
+        {
+            return null;
+        }
+
+        $sectionFields = json_decode($this->category_section_field, true, 512, JSON_THROW_ON_ERROR);
+
+        if(null === current($sectionFields))
+        {
+            return null;
+        }
+
+        return $sectionFields;
+    }
+
+
+    public function getProductOfferUid(): ProductOfferUid|null
+    {
+        return $this->product_offer_uid ? new ProductOfferUid($this->product_offer_uid) : null;
     }
 
     public function getProductOfferValue(): ?string
@@ -166,13 +190,14 @@ class ProductDetailByEventResult
 
     public function getProductVariationUid(): ProductVariationUid|null
     {
-        if(is_null($this->product_variation_uid))
-        {
-            return null;
-        }
-
-        return new ProductVariationUid($this->product_variation_uid);
+        return $this->product_variation_uid ? new ProductVariationUid($this->product_variation_uid) : null;
     }
+
+    public function getProductVariationConst(): ?ProductVariationConst
+    {
+        return $this->product_variation_const ? new ProductVariationConst($this->product_variation_const) : null;
+    }
+
 
     public function getProductVariationValue(): ?string
     {
@@ -186,12 +211,12 @@ class ProductDetailByEventResult
 
     public function getProductModificationUid(): ProductModificationUid|null
     {
-        if(is_null($this->product_modification_uid))
-        {
-            return null;
-        }
+        return $this->product_modification_uid ? new ProductModificationUid($this->product_modification_uid) : null;
+    }
 
-        return new ProductModificationUid($this->product_modification_uid);
+    public function getProductModificationConst(): ?ProductModificationConst
+    {
+        return $this->product_modification_const ? new ProductModificationConst($this->product_modification_const) : null;
     }
 
     public function getProductModificationValue(): ?string
@@ -219,19 +244,19 @@ class ProductDetailByEventResult
         return $this->product_offer_name;
     }
 
-    public function getProductModificationReference(): ?string
+    public function getProductModificationReference(): InputField
     {
-        return $this->product_modification_reference;
+        return new InputField($this->product_modification_reference);
     }
 
-    public function getProductVariationReference(): ?string
+    public function getProductVariationReference(): InputField
     {
-        return $this->product_variation_reference;
+        return new InputField($this->product_variation_reference);
     }
 
-    public function getProductOfferReference(): ?string
+    public function getProductOfferReference(): InputField
     {
-        return $this->product_offer_reference;
+        return new InputField($this->product_offer_reference);
     }
 
     public function getProductImage(): ?string
@@ -260,6 +285,7 @@ class ProductDetailByEventResult
         return $this;
     }
 
+
     public function getProductOfferNamePostfix(): ?string
     {
         return $this->product_offer_name_postfix;
@@ -275,9 +301,15 @@ class ProductDetailByEventResult
         return $this->product_modification_name_postfix;
     }
 
+    public function getProductOfferConst(): ?ProductOfferConst
+    {
+        return $this->product_offer_const ? new ProductOfferConst($this->product_offer_const) : null;
+    }
+
+
     public function isActive(): bool
     {
-        return $this->active === true;
+        return true === $this->active;
     }
 
     public function getActiveFrom(): ?DateTimeImmutable
@@ -378,14 +410,14 @@ class ProductDetailByEventResult
         return new Currency($this->product_currency);
     }
 
-    public function getProductQuantity(): int|null
+    public function getProductQuantity(): int
     {
-        return $this->product_quantity;
+        return $this->product_quantity ?: 0;
     }
 
-    public function getProductReserve(): int|null
+    public function getProductReserve(): int
     {
-        return $this->product_reserve;
+        return $this->product_reserve ?: 0;
     }
 
     public function getProductCardArticle(): ?string

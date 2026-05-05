@@ -245,6 +245,7 @@ final class ProductDetailByEventRepository implements ProductDetailByEventInterf
 
         $dbal
             ->addSelect('product_offer.id as product_offer_uid')
+            ->addSelect('product_offer.const as product_offer_const')
             ->addSelect('product_offer.value as product_offer_value')
             ->addSelect('product_offer.postfix as product_offer_postfix');
 
@@ -332,6 +333,7 @@ final class ProductDetailByEventRepository implements ProductDetailByEventInterf
 
         $dbal
             ->addSelect('product_variation.id as product_variation_uid')
+            ->addSelect('product_variation.const as product_variation_const')
             ->addSelect('product_variation.value as product_variation_value')
             ->addSelect('product_variation.postfix as product_variation_postfix');
 
@@ -390,7 +392,7 @@ final class ProductDetailByEventRepository implements ProductDetailByEventInterf
 
         /* Наличие и резерв множественного варианта */
         $dbal->leftJoin(
-            'category_offer_variation',
+            'product_variation',
             ProductVariationQuantity::class,
             'product_variation_quantity',
             'product_variation_quantity.variation = product_variation.id',
@@ -400,6 +402,7 @@ final class ProductDetailByEventRepository implements ProductDetailByEventInterf
 
         $dbal
             ->addSelect('product_modification.id as product_modification_uid')
+            ->addSelect('product_modification.const as product_modification_const')
             ->addSelect('product_modification.value as product_modification_value')
             ->addSelect('product_modification.postfix as product_modification_postfix');
 
@@ -459,7 +462,7 @@ final class ProductDetailByEventRepository implements ProductDetailByEventInterf
 
         /* Наличие и резерв модификации множественного варианта */
         $dbal->leftJoin(
-            'category_offer_modification',
+            'product_modification',
             ProductModificationQuantity::class,
             'product_modification_quantity',
             'product_modification_quantity.modification = product_modification.id',
@@ -648,8 +651,7 @@ final class ProductDetailByEventRepository implements ProductDetailByEventInterf
 			   
 			   ELSE NULL
 			END AS product_currency
-		',
-        );
+		');
 
         /* Наличие продукта */
 
@@ -691,8 +693,10 @@ final class ProductDetailByEventRepository implements ProductDetailByEventInterf
             'product_event',
             ProductCategory::class,
             'product_event_category',
-            'product_event_category.event = product_event.id AND product_event_category.root = true',
-        );
+            '
+                product_event_category.event = product_event.id 
+                AND product_event_category.root = true
+            ');
 
 
         $dbal->join(
@@ -702,22 +706,26 @@ final class ProductDetailByEventRepository implements ProductDetailByEventInterf
             'category.id = product_event_category.category',
         );
 
-        $dbal->addSelect('category_trans.name AS category_name')->addGroupBy('category_trans.name');
+        $dbal
+            ->addSelect('category_trans.name AS category_name')
+            ->leftJoin(
+                'category',
+                CategoryProductTrans::class,
+                'category_trans',
+                '
+                    category_trans.event = category.event 
+                    AND category_trans.local = :local
+                ');
 
-        $dbal->leftJoin(
-            'category',
-            CategoryProductTrans::class,
-            'category_trans',
-            'category_trans.event = category.event AND category_trans.local = :local',
-        );
+        $dbal
+            ->addSelect('category_info.url AS category_url')
+            ->leftJoin(
+                'category',
+                CategoryProductInfo::class,
+                'category_info',
+                'category_info.event = category.event',
+            );
 
-        $dbal->addSelect('category_info.url AS category_url')->addGroupBy('category_info.url');
-        $dbal->leftJoin(
-            'category',
-            CategoryProductInfo::class,
-            'category_info',
-            'category_info.event = category.event',
-        );
 
         $dbal->leftJoin(
             'category',

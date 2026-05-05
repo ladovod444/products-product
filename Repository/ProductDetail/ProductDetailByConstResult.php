@@ -13,10 +13,11 @@ use BaksDev\Products\Product\Type\Offers\Variation\ConstId\ProductVariationConst
 use BaksDev\Products\Product\Type\Offers\Variation\Id\ProductVariationUid;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\ConstId\ProductModificationConst;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\Id\ProductModificationUid;
+use BaksDev\Reference\Currency\Type\Currency;
 use BaksDev\Reference\Money\Type\Money;
 use DateTimeImmutable;
 
-final readonly class ProductDetailByConstResult
+final readonly class ProductDetailByConstResult implements ProductDetailInterface
 {
     public function __construct(
         private string $id,
@@ -62,12 +63,12 @@ final readonly class ProductDetailByConstResult
         private ?string $product_currency,
     ) {}
 
-    public function getId(): ProductUid
+    public function getProductId(): ProductUid
     {
         return new ProductUid($this->id);
     }
 
-    public function getEvent(): ProductEventUid
+    public function getProductEvent(): ProductEventUid
     {
         return new ProductEventUid($this->event);
     }
@@ -87,7 +88,7 @@ final readonly class ProductDetailByConstResult
         return new Money($this->product_old_price, true);
     }
 
-    public function getActive(): bool
+    public function isActive(): bool
     {
         return true === $this->active;
     }
@@ -129,12 +130,7 @@ final readonly class ProductDetailByConstResult
 
     public function getProductOfferConst(): ?ProductOfferConst
     {
-        if(is_null($this->product_offer_const))
-        {
-            return null;
-        }
-
-        return new ProductOfferConst($this->product_offer_const);
+        return $this->product_offer_const ? new ProductOfferConst($this->product_offer_const) : null;
     }
 
     public function getProductOfferValue(): ?string
@@ -179,12 +175,7 @@ final readonly class ProductDetailByConstResult
 
     public function getProductVariationConst(): ?ProductVariationConst
     {
-        if(is_null($this->product_variation_const))
-        {
-            return null;
-        }
-
-        return new ProductVariationConst($this->product_variation_const);
+        return $this->product_variation_const ? new ProductVariationConst($this->product_variation_const) : null;
     }
 
     public function getProductVariationValue(): ?string
@@ -224,12 +215,7 @@ final readonly class ProductDetailByConstResult
 
     public function getProductModificationConst(): ?ProductModificationConst
     {
-        if(is_null($this->product_modification_const))
-        {
-            return null;
-        }
-
-        return new ProductModificationConst($this->product_modification_const);
+        return $this->product_modification_const ? new ProductModificationConst($this->product_modification_const) : null;
     }
 
     public function getProductModificationValue(): ?string
@@ -267,7 +253,7 @@ final readonly class ProductDetailByConstResult
         return $this->product_image_ext;
     }
 
-    public function getProductImageCdn(): bool
+    public function isProductImageCdn(): bool
     {
         return true === $this->product_image_cdn;
     }
@@ -314,9 +300,9 @@ final readonly class ProductDetailByConstResult
         return new Money($this->product_price, true);
     }
 
-    public function getProductCurrency(): ?string
+    public function getProductCurrency(): Currency
     {
-        return $this->product_currency;
+        return new Currency($this->product_currency);
     }
 
     public function getProductArticle(): ?string
