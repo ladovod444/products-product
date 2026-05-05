@@ -82,6 +82,77 @@
         </ul>
     </div>
 
+
+    {# Поиск по штрихкодам #}
+    <div class="w-25 position-relative">
+        <input type="search" class="form-control w-100 d-none" autocomplete="off" id="searcherBarcode"
+               placeholder="Перейти к штрихкоду...">
+
+        <ul id="searcher-barcode" class="dropdown-menu dropdown-menu-center small position-absolute p-2 mb-3 w-100"
+            style="inset: auto auto 1.5rem 0;">
+
+            {% for offer in form.offer %}
+
+                {% if offer.barcode is defined %}
+
+                    {% for barcode in offer.barcode %}
+
+                        <li data-href="{{ barcode.vars.id }}_value" data-accordion="{{ offer.barcode.vars.id }}">
+                            <span class="nav-link rounded-3 px-2 small text-nowrap mb-1 pointer">
+                             {{ barcode.vars.value.value }}
+                         </span>
+                        </li>
+
+                    {% endfor %}
+
+                {% endif %}
+
+                {% if variation_first %}
+
+                    {% for variation in offer.variation %}
+
+                        {% if variation.barcode is defined %}
+
+                            {# Коллекция вариаций торгового предложения #}
+                            {% for barcode in variation.barcode %}
+
+                                <li data-href="{{ barcode.vars.id }}_value"
+                                    data-accordion="{{ variation.barcode.vars.id }}">
+                                    <span class="nav-link rounded-3 px-2 small text-nowrap mb-1 pointer">
+                                        {{ barcode.vars.value.value }}
+                                     </span>
+                                </li>
+                            {% endfor %}
+
+                        {% endif %}
+
+                        {% if modification_first %}
+
+                            {% for modification in variation.modification %}
+
+                                {# Коллекция модификации множественного варианта #}
+                                {% for barcode in modification.barcode %}
+
+                                    <li data-href="{{ barcode.vars.id }}_value"
+                                        data-accordion="{{ modification.barcode.vars.id }}">
+                                        <span class="nav-link rounded-3 px-2 small text-nowrap mb-1 pointer">
+                                            {{ barcode.vars.value.value }}
+                                         </span>
+                                    </li>
+
+                                {% endfor %}
+
+                            {% endfor %}
+
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+
+            {% endfor %}
+        </ul>
+    </div>
+
+
     {# показать все, если переданы GET параметры  #}
     {% if app.request.query is not empty %}
         <div class="form-check">

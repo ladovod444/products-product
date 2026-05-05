@@ -87,8 +87,7 @@ if(allOffers)
                 }
 
             });
-        }
-        else
+        } else
         {
             document.querySelectorAll(".offers").forEach(function(item)
             {
@@ -133,7 +132,7 @@ if(searcOffer)
         item.addEventListener("click", function()
         {
             let inpt = document.getElementById(item.dataset.href);
-            inpt.scrollIntoView({block : "center", inline : "center", behavior : "smooth"});
+            inpt.scrollIntoView({block: "center", inline: "center", behavior: "smooth"});
             $ul.classList.remove("show");
             setTimeout(function()
             {
@@ -166,8 +165,7 @@ function searcherOffer()
         {
             item.style.display = "";
             $counter++;
-        }
-        else
+        } else
         {
             item.style.display = "none";
         }
@@ -175,10 +173,119 @@ function searcherOffer()
         if($filter.length < 2 || $counter === 0)
         {
             $ul.classList.remove("show");
-        }
-        else
+        } else
         {
             $ul.classList.add("show");
         }
     });
 }
+
+
+/* Поиск по штрихкодам SearchBarcode */
+
+const searchBarcode = document.getElementById("searcherBarcode");
+
+if(searchBarcode)
+{
+    let $ul = document.getElementById("searcher-barcode");
+
+    searchBarcode.addEventListener("keyup", searcherBarcode);
+    searchBarcode.addEventListener("focus", searcherBarcode);
+
+    document.addEventListener("click", function(event)
+    {
+        var isClickInsideBlock1 = $ul.contains(event.target);
+        var isClickInsideBlock2 = searchBarcode.contains(event.target);
+
+        if(!isClickInsideBlock1 && !isClickInsideBlock2)
+        {
+            $ul.classList.remove("show");
+        }
+    });
+
+
+    const lengthBarcodes = $ul.querySelectorAll("li").length;
+
+    /**
+     *  Проверить, что кол-во элементов "штрихкодов" > 1
+     *  (На странице создания нового товара не имеет смысла отображать этот элемент)
+     */
+    if(lengthBarcodes > 1)
+    {
+
+        $ul.querySelectorAll("li").forEach(function(item)
+        {
+
+            searchBarcode.classList.remove("d-none");
+
+            item.addEventListener("click", function()
+            {
+
+                let inpt = document.getElementById(item.dataset.href);
+
+                /** Отобразить элемент */
+
+                let targetId = '#flush-' + item.dataset.accordion;
+
+                /* Получение и клик по элементу - кнопке аккордиона */
+                let accordion_button = document.querySelector(`[data-bs-target="${targetId}"]`);
+
+                // Cделать click, только если element с содержимым скрыт
+                let elemTargetId = 'flush-' + item.dataset.accordion;
+                let elem = document.getElementById(elemTargetId)
+
+                if(elem.classList.contains('show') === false)
+                {
+                    accordion_button.click();
+                }
+
+
+                inpt.scrollIntoView({block: "center", inline: "center", behavior: "smooth"});
+
+                $ul.classList.remove("show");
+                setTimeout(function()
+                {
+                    inpt.focus();
+                }, 200);
+            });
+        });
+    }
+
+}
+
+
+/* Обработчик поиска по штрихкоду */
+function searcherBarcode()
+{
+
+    let $filter = this.value.toUpperCase();
+    let $counter = 0;
+
+    let $ul = document.getElementById("searcher-barcode");
+
+    $ul.querySelectorAll("li").forEach(function(item)
+    {
+
+        let txtValue = item.textContent || item.innerText;
+
+        if(txtValue.toUpperCase().indexOf($filter) > -1)
+        {
+            item.style.display = "";
+            $counter++;
+        } else
+        {
+            item.style.display = "none";
+        }
+
+        if($filter.length < 2 || $counter === 0)
+        {
+            $ul.classList.remove("show");
+        } else
+        {
+            $ul.classList.add("show");
+        }
+    });
+}
+
+
+
