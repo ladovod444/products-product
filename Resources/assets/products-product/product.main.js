@@ -158,7 +158,6 @@ function searcherOffer()
 
     $ul.querySelectorAll("li").forEach(function(item)
     {
-
         let txtValue = item.textContent || item.innerText;
 
         if(txtValue.toUpperCase().indexOf($filter) > -1)

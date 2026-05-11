@@ -56,9 +56,9 @@
 
                         {% if variation.vars.data.article %}
                             <li data-href="{{ variation.article.vars.id }}">
-                            <span class="nav-link rounded-3 px-2 small text-nowrap mb-1 pointer">
-                                {{ variation.vars.data.article }}
-                            </span>
+                                <span class="nav-link rounded-3 px-2 small text-nowrap mb-1 pointer">
+                                    {{ variation.vars.data.article }}
+                                </span>
                             </li>
                         {% endif %}
 
@@ -67,9 +67,9 @@
                             {% for modification in variation.modification %}
                                 {% if modification.vars.data.article %}
                                     <li data-href="{{ modification.article.vars.id }}">
-                                <span class="nav-link rounded-3 px-2 small text-nowrap mb-1 pointer">
-                                    {{ modification.vars.data.article }}
-                                </span>
+                                        <span class="nav-link rounded-3 px-2 small text-nowrap mb-1 pointer">
+                                            {{ modification.vars.data.article }}
+                                        </span>
                                     </li>
                                 {% endif %}
 
