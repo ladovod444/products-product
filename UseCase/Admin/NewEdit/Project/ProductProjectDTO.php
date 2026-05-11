@@ -28,6 +28,7 @@ use BaksDev\Core\Type\Locale\Locale;
 use BaksDev\Products\Product\Entity\Project\ProductProjectInterface;
 use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\UseCase\Admin\NewEdit\Project\Description\ProductProjectDescriptionDTO;
+use BaksDev\Products\Product\UseCase\Admin\NewEdit\Project\Season\ProductProjectSeasonDTO;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -45,10 +46,15 @@ class ProductProjectDTO implements ProductProjectInterface
     #[Assert\Valid]
     private ArrayCollection $description;
 
+    /* Сезонность */
+    #[Assert\Valid]
+    private ArrayCollection $season;
+
 
     public function __construct()
     {
         $this->description = new ArrayCollection();
+        $this->season = new ArrayCollection();
     }
 
     public function getProfile(): ?UserProfileUid
@@ -112,6 +118,37 @@ class ProductProjectDTO implements ProductProjectInterface
         {
             $this->description->add($description);
         }
+    }
+
+
+    /*Сезонность*/
+
+    /**
+     * Коллекция сезонов
+     *
+     * @return ArrayCollection<int, ProductProjectSeasonDTO>
+     */
+    public function getSeason(): ArrayCollection
+    {
+        return $this->season;
+    }
+
+    public function setSeason(ArrayCollection $season): void
+    {
+        $this->season = $season;
+    }
+
+    public function addSeason(ProductProjectSeasonDTO $season): void
+    {
+        if(!$this->season->contains($season))
+        {
+            $this->season->add($season);
+        }
+    }
+
+    public function removeSeason(ProductProjectSeasonDTO $season): void
+    {
+        $this->season->removeElement($season);
     }
 
 }

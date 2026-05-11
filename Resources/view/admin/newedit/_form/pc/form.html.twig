@@ -189,6 +189,24 @@
         </button>
     </li>
 
+    {# Сезонность #}
+    <li class="nav-item">
+        <button class="btn fw-bolder nav-link"
+                data-bs-toggle="tab"
+                type="button"
+                role="tab"
+                aria-selected="true"
+
+                id="tab_project_season-tab"
+                data-bs-target="#tab_project_season"
+                aria-controls="nav-product">
+
+            <small class="text-uppercase px-3">
+                Сезонность
+            </small>
+        </button>
+    </li>
+
     {# Галерея #}
     <li class="nav-item">
         <button class="btn fw-bolder nav-link"
@@ -264,6 +282,11 @@
     {#  Project descriptions #}
     <div class="tab-pane fade" id="tab_project_description" role="tabpanel">
         {{ include(_self|replace({ "form.html.twig": "form.project_descriptions.html.twig" })) }}
+    </div>
+
+    {# Project seasons #}
+    <div class="tab-pane fade" id="tab_project_season" role="tabpanel">
+        {{ include(_self|replace({ "form.html.twig": "form.project_seasons.html.twig" })) }}
     </div>
 
     {# ГАЛЕРЕЯ #}

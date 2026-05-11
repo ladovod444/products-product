@@ -31,7 +31,6 @@ use BaksDev\Products\Product\Type\Invariable\ProductInvariableUid;
 use BaksDev\Reference\Currency\Type\Currency;
 use BaksDev\Reference\Money\Type\Money;
 use DateTimeImmutable;
-use Symfony\Component\Validator\Constraints as Assert;
 
 /** @see AllProductsByCategoryResult */
 final class AllProductsByCategoryResult
@@ -109,6 +108,8 @@ final class AllProductsByCategoryResult
 
         private string|int|null $promotion_price = null,
         private ?bool $promotion_active = null,
+
+        private string|null $season_percent = null,
     ) {}
 
     public function getProductId(): ProductUid
@@ -322,6 +323,12 @@ final class AllProductsByCategoryResult
         if(false === empty($this->project_discount))
         {
             $price->applyString($this->project_discount);
+        }
+
+        /* Торговая наценка с учетом сезонности */
+        if(false === empty($this->season_percent))
+        {
+            $price->applyString($this->season_percent);
         }
 
         return $price;

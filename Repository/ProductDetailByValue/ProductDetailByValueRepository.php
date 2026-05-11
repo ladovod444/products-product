@@ -61,6 +61,7 @@ use BaksDev\Products\Product\Entity\Product;
 use BaksDev\Products\Product\Entity\ProductInvariable;
 use BaksDev\Products\Product\Entity\Project\Description\ProductProjectDescription;
 use BaksDev\Products\Product\Entity\Project\ProductProject;
+use BaksDev\Products\Product\Entity\Project\Season\ProductProjectSeason;
 use BaksDev\Products\Product\Entity\Property\ProductProperty;
 use BaksDev\Products\Product\Entity\Seo\ProductSeo;
 use BaksDev\Products\Product\Entity\Trans\ProductTrans;
@@ -69,7 +70,6 @@ use BaksDev\Products\Promotion\BaksDevProductsPromotionBundle;
 use BaksDev\Products\Promotion\Entity\Event\Invariable\ProductPromotionInvariable;
 use BaksDev\Products\Promotion\Entity\Event\Period\ProductPromotionPeriod;
 use BaksDev\Products\Promotion\Entity\Event\Price\ProductPromotionPrice;
-use BaksDev\Products\Promotion\Entity\Event\ProductPromotionEvent;
 use BaksDev\Products\Promotion\Entity\ProductPromotion;
 use BaksDev\Products\Stocks\BaksDevProductsStocksBundle;
 use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
@@ -78,7 +78,6 @@ use BaksDev\Users\Profile\UserProfile\Entity\Event\Delivery\UserProfileDelivery;
 use BaksDev\Users\Profile\UserProfile\Entity\Event\Discount\UserProfileDiscount;
 use BaksDev\Users\Profile\UserProfile\Entity\Event\Region\UserProfileRegion;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
-use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
@@ -277,6 +276,17 @@ final class ProductDetailByValueRepository implements ProductDetailByValueInterf
             )->setParameter(
                 key: 'device',
                 value: 'pc',
+            );
+
+        /* Получить товарную наценку (скидку) по сезонности с учетом текущего месяца */
+        $dbal
+            ->addSelect('product_project_season.percent as season_percent')
+            ->leftJoin(
+                'product_project',
+                ProductProjectSeason::class,
+                'product_project_season',
+                'product_project_season.project = product_project.id
+                AND product_project_season.month = EXTRACT(MONTH FROM CURRENT_DATE)::INT',
             );
 
         /** ProductInfo */

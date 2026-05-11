@@ -71,6 +71,7 @@ final readonly class ProductModelResult
         private string|null $project_profile = null,
         private string|null $profiles = null,
 
+        private string|null $season_percent = null,
     ) {}
 
     public function getProductId(): ProductUid
@@ -257,6 +258,12 @@ final readonly class ProductModelResult
         if(false === empty($this->profile_discount))
         {
             $minPrice->applyString($this->profile_discount);
+        }
+
+        /* Торговая наценка с учетом сезонности */
+        if(false === empty($this->season_percent))
+        {
+            $minPrice->applyString($this->season_percent);
         }
 
         return $minPrice;

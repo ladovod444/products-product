@@ -79,6 +79,8 @@ final readonly class ModelOrProductByCategoryResult implements ModelsOrProductsC
         private string|null $project_discount = null,
 
         private string|null $product_quantity_stocks = null,
+
+        private string|null $season_percent = null,
     ) {}
 
 
@@ -271,6 +273,12 @@ final readonly class ModelOrProductByCategoryResult implements ModelsOrProductsC
             $price->applyString($this->profile_discount);
         }
 
+        /* Торговая наценка с учетом сезонности */
+        if(false === empty($this->season_percent))
+        {
+            $price->applyString($this->season_percent);
+        }
+
         return $price;
     }
 
@@ -346,6 +354,12 @@ final readonly class ModelOrProductByCategoryResult implements ModelsOrProductsC
         if(false === empty($this->profile_discount))
         {
             $price->applyString($this->profile_discount);
+        }
+
+        /* Торговая наценка с учетом сезонности */
+        if(false === empty($this->season_percent))
+        {
+            $price->applyString($this->season_percent);
         }
 
         return $price;

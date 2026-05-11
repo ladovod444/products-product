@@ -30,11 +30,13 @@ use BaksDev\Products\Category\Type\Id\CategoryProductUid;
 use BaksDev\Products\Product\Entity\Event\ProductEvent;
 use BaksDev\Products\Product\Entity\Product;
 use BaksDev\Products\Product\Repository\ProductProject\ProductProjectInterface;
+use BaksDev\Products\Product\Repository\ProductProjectSeason\ProductProjectSeasonInterface;
 use BaksDev\Products\Product\UseCase\Admin\NewEdit\Category\CategoryCollectionDTO;
 use BaksDev\Products\Product\UseCase\Admin\NewEdit\ProductDTO;
 use BaksDev\Products\Product\UseCase\Admin\NewEdit\ProductForm;
 use BaksDev\Products\Product\UseCase\Admin\NewEdit\ProductHandler;
 use BaksDev\Products\Product\UseCase\Admin\NewEdit\Project\Description\ProductProjectDescriptionDTO;
+use BaksDev\Products\Product\UseCase\Admin\NewEdit\Project\Season\ProductProjectSeasonDTO;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -50,7 +52,8 @@ final class EditController extends AbstractController
         #[MapEntity] ProductEvent $Event,
         Request $request,
         ProductHandler $productHandler,
-        ProductProjectInterface $productProject
+        ProductProjectInterface $productProject,
+        ProductProjectSeasonInterface $productProjectSeasons,
     ): Response
     {
         $ProductDTO = new ProductDTO();
@@ -83,6 +86,31 @@ final class EditController extends AbstractController
             {
                 $category->setRoot(true);
                 $category->setCategory(new CategoryProductUid($request->get('category')));
+            }
+        }
+
+
+        /* Получить seasons товара */
+
+        $existingProjectProfileSeasons = $productProjectSeasons
+            ->byProduct($Event->getMain())
+            ->findAll();
+
+        /* Задать значения для seasons */
+        if(false !== $existingProjectProfileSeasons)
+        {
+            $seasonCollection = $ProductDTO->getProject()->getSeason();
+            $seasonCollection->clear();
+
+            foreach($existingProjectProfileSeasons as $productProjectSeason)
+            {
+
+                /* Заполнить "сезонность" */
+                $ProductProjectSeasonDTO = new ProductProjectSeasonDTO();
+                $ProductProjectSeasonDTO->setMonth($productProjectSeason->getMonth());
+                $ProductProjectSeasonDTO->setPercent($productProjectSeason->getPercent());
+
+                $seasonCollection->add($ProductProjectSeasonDTO);
             }
         }
 

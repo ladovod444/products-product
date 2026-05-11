@@ -1,0 +1,86 @@
+{% trans_default_domain 'products-product.admin' %}
+
+<div class="d-flex gap-2">
+
+    <div class="d-flex flex-column gap-2 w-100 mb-2">
+        {# Сезонная наценка #}
+
+        <div class="card w-100 border-light">
+
+            <div class="card-header border-light bg-body">
+                <div class="card-title">
+                    <h4>
+                        Сезонная наценка
+                    </h4>
+                </div>
+            </div>
+
+
+            <div class="card w-50 border-light">
+                <div class="card-body pb-0" id="collection-season">
+
+                    <div class="d-flex justify-content-between gap-3 mb-3">
+                        <div class="w-100 ps-5 ms-4 fw-bold text-uppercase">Месяц</div>
+                        <div class="w-100 ps-3 fw-bold text-uppercase">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                 class="text-muted" viewBox="0 0 16 16" role="tooltip" data-bs-toggle="tooltip"
+                                 data-bs-placement="bottom"
+                                 data-bs-original-title="Положительное либо отрицательное число в рублях, либо с процентом ( 100 || -100 || 10% || -10% )">
+                                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.496 6.033h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286a.237.237 0 0 0 .241.247zm2.325 6.443c.61 0 1.029-.394 1.029-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94 0 .533.425.927 1.01.927z"></path>
+                            </svg>
+                            Торговая наценка
+                        </div>
+                    </div>
+
+                    {% for form in form.project.season %}
+                        <div class='mb-3 item-season' id='item_{{ form.vars.id }}'>
+                            {{ include(_self|replace({ "form.project_seasons.html.twig": "includes/season/_season.html.twig" })) }}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+
+            <div class="card-body pb-0">
+
+                <div class="card-footer border-light bg-body d-flex justify-content-between align-items-center">
+                    <button
+                            type="button"
+                            id="seasonAddCollection"
+                            class="btn btn-sm btn-outline-primary border-0 season-add-collection"
+                            data-prototype="{{ include(_self|replace({ "form.project_seasons.html.twig": "includes/season/_season.prototype.html.twig" }))|e('html_attr') }}"
+
+                            data-collection="{{ form.project.season.vars.id }}-collection"
+                            data-index="{{ form.project.season.count }}"
+                            data-season="{{ form.project.season.vars.name }}"
+                    >
+
+                    <span class="svg-icon svg-icon-2">
+							<svg xmlns="http://www.w3.org/2000/svg"
+                                 width="24"
+                                 height="24"
+                                 viewBox="0 0 24 24"
+                                 fill="none">
+								<rect opacity="0.5"
+                                      x="11"
+                                      y="18"
+                                      width="12"
+                                      height="2"
+                                      rx="1"
+                                      transform="rotate(-90 11 18)"
+                                      fill="currentColor">
+							</rect>
+								<rect x="6" y="11" width="12" height="2" rx="1" fill="currentColor"></rect>
+							</svg>
+						</span>
+                        {{ form.project.season.count ? 'Добавить еще настройку' : 'Добавить настройку' }}
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+

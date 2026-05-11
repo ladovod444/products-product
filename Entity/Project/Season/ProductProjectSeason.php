@@ -23,68 +23,60 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Product\Entity\Project;
+namespace BaksDev\Products\Product\Entity\Project\Season;
 
 use BaksDev\Core\Entity\EntityState;
-use BaksDev\Products\Product\Entity\Project\Description\ProductProjectDescription;
-use BaksDev\Products\Product\Entity\Project\Season\ProductProjectSeason;
-use BaksDev\Products\Product\Type\Id\ProductUid;
-use BaksDev\Products\Product\Type\Project\ProductProjectUid;
-use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use Doctrine\Common\Collections\Collection;
+use BaksDev\Products\Product\Entity\Project\ProductProject;
+use BaksDev\Products\Product\Type\Project\Season\ProductProjectSeasonUid;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/* ProductProject */
-
 #[ORM\Entity]
-#[ORM\Table(name: 'product_project')]
-class ProductProject extends EntityState
+#[ORM\Table(name: 'product_project_season')]
+class ProductProjectSeason extends EntityState
 {
 
-    /** ID */
     #[ORM\Id]
-    #[ORM\Column(type: ProductProjectUid::TYPE)]
-    private readonly ProductProjectUid $id;
-
-    /** ID Product */
     #[Assert\NotBlank]
     #[Assert\Uuid]
-    #[Assert\Type(ProductUid::class)]
-    #[ORM\Column(type: ProductUid::TYPE, nullable: false)]
-    private ProductUid $product;
+    #[ORM\Column(type: ProductProjectSeasonUid::TYPE)]
+    private ProductProjectSeasonUid $id;
 
-    /** Описание */
-    #[ORM\OneToMany(targetEntity: ProductProjectDescription::class, mappedBy: 'project', cascade: ['all'])]
-    private Collection $description;
-
-    /** Сезонность */
-    #[ORM\OneToMany(targetEntity: ProductProjectSeason::class, mappedBy: 'project', cascade: ['all'])]
-    private Collection $season;
-
-    /** Профиль  */
-    #[ORM\Column(type: UserProfileUid::TYPE, nullable: true)]
-    private ?UserProfileUid $profile = null;
+    /** Связь на ProductProject */
+    #[ORM\ManyToOne(targetEntity: ProductProject::class, inversedBy: "season")]
+    #[ORM\JoinColumn(name: 'project', referencedColumnName: 'id')]
+    private readonly ProductProject $project;
 
 
-    public function __construct()
+    /** Значение торговой надбавки */
+    #[Assert\NotBlank]
+    #[ORM\Column(type: Types::STRING, options: ['default' => 0])]
+    private string $percent = '0';
+
+    /** Значение месяца */
+    #[Assert\NotBlank]
+    #[ORM\Column(type: Types::SMALLINT, options: ['default' => 1])]
+    private int $month = 1;
+
+
+    public function __construct(ProductProject $project)
     {
-        $this->id = new ProductProjectUid();
-
+        $this->project = $project;
+        $this->id = new ProductProjectSeasonUid();
     }
 
     public function __toString(): string
     {
-        return (string) $this->id;
+        return (string) $this->project;
     }
-
 
     public function getDto($dto): mixed
     {
         $dto = is_string($dto) && class_exists($dto) ? new $dto() : $dto;
 
-        if($dto instanceof ProductProjectInterface)
+        if($dto instanceof ProductProjectSeasonInterface)
         {
             return parent::getDto($dto);
         }
@@ -96,18 +88,12 @@ class ProductProject extends EntityState
     public function setEntity($dto): mixed
     {
 
-        if($dto instanceof ProductProjectInterface || $dto instanceof self)
+        if($dto instanceof ProductProjectSeasonInterface || $dto instanceof self)
         {
-
             return parent::setEntity($dto);
         }
 
         throw new InvalidArgumentException(sprintf('Class %s interface error', $dto::class));
-    }
-
-    public function getId(): ProductProjectUid
-    {
-        return $this->id;
     }
 
 }

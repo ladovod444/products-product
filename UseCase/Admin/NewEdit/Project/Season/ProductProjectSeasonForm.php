@@ -21,52 +21,43 @@
  *  THE SOFTWARE.
  */
 
-namespace BaksDev\Products\Product\UseCase\Admin\NewEdit\Project;
+declare(strict_types=1);
 
-use BaksDev\Products\Product\UseCase\Admin\NewEdit\Project\Description\ProductProjectDescriptionForm;
-use BaksDev\Products\Product\UseCase\Admin\NewEdit\Project\Season\ProductProjectSeasonForm;
+namespace BaksDev\Products\Product\UseCase\Admin\NewEdit\Project\Season;
+
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\CollectionType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class ProductProjectForm extends AbstractType
+final class ProductProjectSeasonForm extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
 
-        /** Описание */
-        $builder->add('description', CollectionType::class, [
-            'entry_type' => ProductProjectDescriptionForm::class,
-            'entry_options' => ['label' => false],
-            'label' => false,
-            'by_reference' => false,
-            'allow_delete' => true,
-            'allow_add' => true,
-            'prototype_name' => '__description__',
+        $builder->add('month', ChoiceType::class, [
+            'choices' => array_combine(
+                [   // labels
+                    'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+                    'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
+                ],
+                range(1, 12) // value
+            ),
+            'placeholder' => 'Выберите месяц',
         ]);
 
-
-        /** Сезонность */
-        $builder->add('season', CollectionType::class, [
-            'entry_type' => ProductProjectSeasonForm::class,
-            'entry_options' => ['label' => false],
-            'by_reference' => false,
-            'allow_delete' => true,
-            'allow_add' => true,
-            'label' => false,
-            'prototype_name' => '__seasons__',
-            'required' => true
-        ]);
-
+        /** Торговая наценка */
+        $builder->add('percent', TextType::class);
+        
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
-        $resolver->setDefaults(
-            [
-                'data_class' => ProductProjectDTO::class,
-            ],
-        );
+        $resolver->setDefaults([
+            'data_class' => ProductProjectSeasonDTO::class,
+            'method' => 'POST',
+            'attr' => ['class' => 'w-100'],
+        ]);
     }
 }

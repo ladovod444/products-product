@@ -120,6 +120,8 @@ final readonly class ProductDetailByValueResult implements ProductPriceResultInt
 
         private string|null $project_profile = null,
         private string|null $profiles = null,
+
+        private string|null $season_percent = null,
     ) {}
 
     public function getProductId(): ProductUid
@@ -575,6 +577,12 @@ final readonly class ProductDetailByValueResult implements ProductPriceResultInt
             $price->applyString($this->profile_discount);
         }
 
+        /* Торговая наценка с учетом сезонности */
+        if(false === empty($this->season_percent))
+        {
+            $price->applyString($this->season_percent);
+        }
+
         return $price;
     }
 
@@ -603,6 +611,12 @@ final readonly class ProductDetailByValueResult implements ProductPriceResultInt
         if(false === empty($this->profile_discount))
         {
             $price->applyString($this->profile_discount);
+        }
+
+        /* Торговая наценка с учетом сезонности */
+        if(false === empty($this->season_percent))
+        {
+            $price->applyString($this->season_percent);
         }
 
         return $price;

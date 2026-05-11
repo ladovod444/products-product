@@ -61,6 +61,7 @@ use BaksDev\Products\Product\Entity\Product;
 use BaksDev\Products\Product\Entity\ProductInvariable;
 use BaksDev\Products\Product\Entity\Project\Description\ProductProjectDescription;
 use BaksDev\Products\Product\Entity\Project\ProductProject;
+use BaksDev\Products\Product\Entity\Project\Season\ProductProjectSeason;
 use BaksDev\Products\Product\Entity\Property\ProductProperty;
 use BaksDev\Products\Product\Entity\Seo\ProductSeo;
 use BaksDev\Products\Product\Entity\Trans\ProductTrans;
@@ -499,11 +500,32 @@ final class ProductModelRepository implements ProductModelInterface
                 );
         }
 
+
+        /* Сезонная торговая наценка */
+        $projectSeasonSelect = "'season_percent', NULL,";
+
+        if(true === $dbal->bindProjectProfile())
+        {
+            $projectSeasonSelect = "'season_percent', product_project_season.percent,";
+
+            $dbal
+                ->addSelect('product_project_season.percent as season_percent')
+                ->leftJoin(
+                    'product_project',
+                    ProductProjectSeason::class,
+                    'product_project_season',
+                    'product_project_season.project = product_project.id
+                AND product_project_season.month = EXTRACT(MONTH FROM CURRENT_DATE)::INT',
+                );
+        }
+
+
         /**
          * ProductsPromotion
          */
 
         $promotionPriceSelect = "'promotion_price', NULL,";
+
         $promotionActiveSelect = "'promotion_active', NULL,";
 
         if(true === class_exists(BaksDevProductsPromotionBundle::class) && true === $dbal->isProjectProfile())
@@ -659,6 +681,9 @@ final class ProductModelRepository implements ProductModelInterface
         						
         						/* Project Discount */
         						{$projectDiscountSelect}
+        						
+        						/* Project Season */
+        						{$projectSeasonSelect}
         						
                                 /* Project Product Quantity Stocks */
                                 {$productQuantityStocks}

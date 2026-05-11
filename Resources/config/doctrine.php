@@ -60,6 +60,8 @@ use BaksDev\Products\Product\Type\Project\Description\ProductProjectDescriptionT
 use BaksDev\Products\Product\Type\Project\Description\ProductProjectDescriptionUid;
 use BaksDev\Products\Product\Type\Project\ProductProjectType;
 use BaksDev\Products\Product\Type\Project\ProductProjectUid;
+use BaksDev\Products\Product\Type\Project\Season\ProductProjectSeasonType;
+use BaksDev\Products\Product\Type\Project\Season\ProductProjectSeasonUid;
 use BaksDev\Products\Product\Type\Settings\ProductSettingsIdentifier;
 use BaksDev\Products\Product\Type\Settings\ProductSettingsType;
 use BaksDev\Products\Product\Type\Video\ProductVideoType;
@@ -93,6 +95,8 @@ return static function(ContainerConfigurator $container, DoctrineConfig $doctrin
 
     $doctrine->dbal()->type(ProductProjectUid::TYPE)->class(ProductProjectType::class);
     $doctrine->dbal()->type(ProductProjectDescriptionUid::TYPE)->class(ProductProjectDescriptionType::class);
+
+    $doctrine->dbal()->type(ProductProjectSeasonUid::TYPE)->class(ProductProjectSeasonType::class);
 
 
     $services = $container->services()
