@@ -23,7 +23,7 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Products\Product\Repository\ProductProject;
+namespace BaksDev\Products\Product\Repository\ProductProjectDescription;
 
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Products\Product\Entity\Project\Description\ProductProjectDescription;
@@ -33,7 +33,7 @@ use Generator;
 use InvalidArgumentException;
 
 
-final class ProductProjectRepository implements ProductProjectInterface
+final class ProductProjectDescriptionRepository implements ProductProjectDescriptionInterface
 {
 
     private ProductUid|false $product;
@@ -93,7 +93,7 @@ final class ProductProjectRepository implements ProductProjectInterface
         }
 
 
-        $result = $dbal->fetchAllHydrate(ProductProjectResult::class);
+        $result = $dbal->fetchAllHydrate(ProductProjectDescriptionResult::class);
 
         return ($result->valid() === true) ? $result : false;
 

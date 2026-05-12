@@ -61,6 +61,7 @@ use BaksDev\Products\Promotion\Entity\Event\Price\ProductPromotionPrice;
 use BaksDev\Products\Promotion\Entity\ProductPromotion;
 use BaksDev\Users\Profile\UserProfile\Entity\Event\Discount\UserProfileDiscount;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
+use Doctrine\DBAL\ParameterType;
 use Generator;
 
 final class BestSellerProductsRepository implements BestSellerProductsInterface
@@ -635,7 +636,12 @@ final class BestSellerProductsRepository implements BestSellerProductsInterface
                 ProductProjectSeason::class,
                 'product_project_season',
                 'product_project_season.project = product_project.id
-                AND product_project_season.month = EXTRACT(MONTH FROM CURRENT_DATE)::INT',
+               AND product_project_season.month = :month',
+            )
+            ->setParameter(
+                key: 'month',
+                value: (int) date('n'),
+                type: ParameterType::INTEGER,
             );
 
 

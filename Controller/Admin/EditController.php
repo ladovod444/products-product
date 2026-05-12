@@ -29,7 +29,7 @@ use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Products\Category\Type\Id\CategoryProductUid;
 use BaksDev\Products\Product\Entity\Event\ProductEvent;
 use BaksDev\Products\Product\Entity\Product;
-use BaksDev\Products\Product\Repository\ProductProject\ProductProjectInterface;
+use BaksDev\Products\Product\Repository\ProductProjectDescription\ProductProjectDescriptionInterface;
 use BaksDev\Products\Product\Repository\ProductProjectSeason\ProductProjectSeasonInterface;
 use BaksDev\Products\Product\UseCase\Admin\NewEdit\Category\CategoryCollectionDTO;
 use BaksDev\Products\Product\UseCase\Admin\NewEdit\ProductDTO;
@@ -52,7 +52,7 @@ final class EditController extends AbstractController
         #[MapEntity] ProductEvent $Event,
         Request $request,
         ProductHandler $productHandler,
-        ProductProjectInterface $productProject,
+        ProductProjectDescriptionInterface $productProjectDescriptions,
         ProductProjectSeasonInterface $productProjectSeasons,
     ): Response
     {
@@ -107,8 +107,9 @@ final class EditController extends AbstractController
 
                 /* Заполнить "сезонность" */
                 $ProductProjectSeasonDTO = new ProductProjectSeasonDTO();
-                $ProductProjectSeasonDTO->setMonth($productProjectSeason->getMonth());
-                $ProductProjectSeasonDTO->setPercent($productProjectSeason->getPercent());
+                $ProductProjectSeasonDTO
+                    ->setMonth($productProjectSeason->getMonth())
+                    ->setPercent($productProjectSeason->getPercent());
 
                 $seasonCollection->add($ProductProjectSeasonDTO);
             }
@@ -116,7 +117,7 @@ final class EditController extends AbstractController
 
 
         /* Получить описания товара */
-        $existingProjectProfileDescriptions = $productProject
+        $existingProjectProfileDescriptions = $productProjectDescriptions
             ->byProduct($Event->getMain())
             ->findAll();
 
@@ -133,10 +134,11 @@ final class EditController extends AbstractController
 
                 /* Заполнить описания */
                 $ProductProjectDescriptionDTO = new ProductProjectDescriptionDTO();
-                $ProductProjectDescriptionDTO->setLocal($productProjectDescription->getLocal());
-                $ProductProjectDescriptionDTO->setDevice($productProjectDescription->getDevice());
-                $ProductProjectDescriptionDTO->setDescription($productProjectDescription->getDescription());
-                $ProductProjectDescriptionDTO->setPreview($productProjectDescription->getPreview());
+                $ProductProjectDescriptionDTO
+                    ->setLocal($productProjectDescription->getLocal())
+                    ->setDevice($productProjectDescription->getDevice())
+                    ->setDescription($productProjectDescription->getDescription())
+                    ->setPreview($productProjectDescription->getPreview());
 
                 $descriptionCollection->add($ProductProjectDescriptionDTO);
             }
